@@ -23,6 +23,13 @@ cgdisk /dev/sda
 ***** [128MB] Apple HFS+ "Boot Loader"
 ***** [256MB] Linux filesystem "Boot"
 ***** [Rest of space] Linux filesystem "Root"
+That's three partitions. In my case, I forgot to create a separate /boot
+partition, because I mixed it up with the Apple bootloader, and everything worked,
+but if you want disk encryption that's not good, and there is probably another reason
+for separating the partitions like this.
+Swap is optional, but in this case (128GB)
+
+
 *** 4. Format and mount partitions
 #+begin_src sh
 mkfs.ext4 /dev/sda5
@@ -30,6 +37,8 @@ mkfs.ext4 /dev/sda6
 mount /dev/sda6 /mnt
 mkdir /mnt/boot && mount /dev/sda5 /mnt/boot
 #+end_src
+
+
 *** 5. Installation
 This requires an internet connection. Options:
 - Tethered phone via USB (easiest IMO)
@@ -39,6 +48,8 @@ This requires an internet connection. Options:
 pacstrap /mnt base base-devel
 genfstab -U -p /mnt >> /mnt/etc/fstab
 #+end_src
+
+
 *** 6. Optimize fstab for SSD
 #+begin_src sh
 nano /mnt/etc/fstab
@@ -47,21 +58,32 @@ nano /mnt/etc/fstab
 /dev/sda6 /     ext4 defaults,noatime,discard,data=writeback 0 1
 /dev/sda5 /boot ext4 defaults,relatime,stripe=4              0 2
 #+end_example
+https://wiki.archlinux.org/index.php/Solid_State_Drives
+It's about 'discard'. TODO more info
+
+
 *** 7. Configure system
 #+begin_src sh
 arch-chroot /mnt /bin/bash
 passwd
 echo myhostname > /etc/hostname
+## https://wiki.archlinux.org/index.php/beginners%27_guide#Time_zone
+ls /usr/share/zoneinfo # find your region
 ln -s /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+# ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 hwclock --systohc --utc
 useradd -m -g users -G wheel -s /bin/bash myusername
 passwd myusername
 pacman -S sudo
 #+end_src
+
+
 *** 8. Grant sudo
 #+begin_src sh
 echo "myusername ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 #+end_src
+
+
 *** 9. Set up locale
 #+begin_src sh
 nano /etc/locale.gen
@@ -71,6 +93,8 @@ locale-gen
 echo LANG=en_US.UTF8 > /etc/locale.conf
 export LANG=en_US.UTF-8
 #+end_src
+
+
 *** 10. Set up mkinitcpio hooks and run
 Insert "keyboard" after "autodetect" if it's not already there.
 #+begin_src sh
@@ -80,6 +104,8 @@ Then run it:
 #+begin_src sh
 mkinitcpio -p linux
 #+end_src
+
+
 *** 11. Set up GRUB/EFI
 To boot up the computer we will continue to use Apple's EFI
 bootloader, so we need GRUB-EFI:
@@ -104,8 +130,15 @@ GRUB_DISABLE_SUBMENU=y
 #+begin_src sh
 grub-mkconfig -o boot/grub/grub.cfg
 grub-mkstandalone -o boot.efi -d usr/lib/grub/x86_64-efi -O x86_64-efi --compress=xz boot/grub/grub.cfg
+## might be useful (if you already have one USB stick and one with WiFi):
+nc -l 8181 > boot.efi
+
+nc 192.168.178.168 8181 < boot.efi
 #+end_src
 Copy boot.efi (generated in the command above) to a USB stick for use later in OS X.
+
+
+
 *** 12. Setup boot in OS X
 Exit everything and reboot into OS X (by holding alt/option) and
 then choosing it.
@@ -113,8 +146,13 @@ then choosing it.
 exit # exit chroot
 reboot
 #+end_src
+
+
 *** 13. Launch Disk Utility in OS X
-Format ("Erase") /dev/sda4 using Mac journaled filesystem
+Format ("Erase") /dev/sda4 using Mac journaled filesystem.
+Yes, really "Erase".
+
+
 *** 14. Create boot file structure
 This procedure allows the Apple bootloader to see our Arch
 Linux system and present it as the default boot option.
@@ -144,7 +182,7 @@ nano SystemVersion.plist
 </dict>
 </plist>
 #+end_example
-Copy boot.efi from your USB stick to this CoreServices directory. 
+Copy boot.efi from your USB stick to this CoreServices directory.
 The tree should look like this:
 #+begin_example
 |___mach_kernel
@@ -157,6 +195,8 @@ The tree should look like this:
                       |___SystemVersion.plist
                       |___boot.efi
 #+end_example
+
+
 *** 15. Make Boot Loader partition bootable
 #+begin_src sh
 sudo bless --device /dev/disk0s4 --setBoot
@@ -165,9 +205,11 @@ Voila, Arch Linux is installed.
 
 Reboot the computer and hold the alt/option key to
 select which operating system to boot.
+
+
 *** 16. Get wireless working in Arch
 **** Get broadcom drivers
-***** Download and install [[https://aur.archlinux.org/packages/broadcom-wl/][broadcom from AUR]]
+***** Download and install [[https://aur.archlinux.org/packages/broadcom-wl/][broadcom wl from AUR]]
 (Make sure that b43 and ssb modules are not present in the output
 from `lsmod`)
 #+begin_src sh
@@ -186,6 +228,8 @@ sudo systemctl enable dkms.service
 sudo pacman -S dialog
 sudo wifi-menu -o
 #+end_src
+
+
 *** 17. Tilde key
 The tilde key does not work on the keyboard out of the box. There
 are several solutions listed [[https://wiki.archlinux.org/index.php/Apple_Keyboard][here]] but this one worked for me:
@@ -195,6 +239,8 @@ sudo nano /etc/modprobe.d/hid_apple.conf
 #+begin_example
 options hid_apple iso_layout=0
 #+end_example
+
+
 *** 18. Insert and <F1..12> keys
 The <insert> key can be reproduced with fn+<Enter>. So to paste in an xterm
 window for instance, use S-fn-<Enter>.
