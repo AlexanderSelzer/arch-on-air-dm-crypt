@@ -1,7 +1,7 @@
-Arch on Air (please don't follow yet, this is incomplete right now)
+Arch Linux on a MacBook Air
 ---------
 
-Instructions for installing Arch Linux side-by-side with OS X on a Macbook Air 2013/2014.
+Instructions for installing Arch Linux side-by-side with OS X on a Macbook Air 2013/2014, and probably earlier models and even MacBook pros (not tested though).
 
 This is a fork of [this](https://github.com/pandeiro/arch-on-air) to include encryption using dm-crypt.
 
