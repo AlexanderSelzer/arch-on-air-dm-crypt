@@ -1,37 +1,47 @@
-* Arch on Air
-Instructions for installing Arch Linux side-by-side with OS X on
-a Macbook Air 2013.
+Arch on Air
+---------
+
+Instructions for installing Arch Linux side-by-side with OS X on a Macbook Air 2013/2014.
+
+This is a fork of [this](https://github.com/pandeiro/arch-on-air) to include encryption using dm-crypt.
 
 Most of this information was taken from these two sources:
 - [https://bbs.archlinux.org/viewtopic.php?id%3D165899](ArchLinux Forums: Macbook Air 2013)
 - [http://panks.me/blog/2013/06/arch-linux-installation-with-os-x-on-macbook-air-dual-boot/](ArchLinux Installation With OS X on Macbook Air (Dual Boot))
+- [https://wiki.archlinux.org/index.php/Dm-crypt/Device_encryption#Encrypting_devices_with_cryptsetup](https://wiki.archlinux.org/index.php/Dm-crypt/Device_encryption#Encrypting_devices_with_cryptsetup)
 
 ## Procedure
-1. Make bootable USB media with Arch ISO image ([[https://wiki.archlinux.org/index.php/USB_Flash_Installation_Media][wiki]])
-2. Hold the <alt/option> key and boot into USB
+1. Make bootable USB media with Arch ISO image ([https://wiki.archlinux.org/index.php/USB_Flash_Installation_Media](wiki))
+2. Hold the `<alt/option>` key and boot into USB
 3. Create partitions
 The following example assumes Arch will sit on a single partition;
 adjust according to preference.
+You might want a swap partition, but in my opinion it is not needed if you have 8GB of RAM but a rather small disk (128GB).
 
-It may also be possible to create a data partition that can be
-accessed from both OS X and GNU/Linux systems: how to
-do that properly is left as an exercise to the reader.
 ```
 cgdisk /dev/sda
 ```
-**** Partitions:
-***** [128MB] Apple HFS+ "Boot Loader"
-***** [256MB] Linux filesystem "Boot"
-***** [Rest of space] Linux filesystem "Root"
-That's three partitions (I forgot to). Use Linux Filesystem on all of them
 
+**** Partitions:
+***** [128MB] Apple HFS+ "Boot Loader" (will get formatted to HFS+ later)
+***** [256MB] Linux filesystem "boot"
+***** [Rest of space] Linux filesystem "root"
+That's three partitions. Don't forget /boot (it would work without it, but not with disk encryption)
+
+### Very important: device names
+
+These can vary, so be careful and double-check everything involving the partitions.
+* /dev/sda4 is assumed to be the apple bootloader
+* /dev/sda5 is assumed to be the /boot partition of the linux system
+* /dev/sda6 is assumed to be the root file system.
 
 ## 4. Format and mount partition
 ```
-mkfs.ext4 /dev/sda5
-mkfs.ext4 /dev/sda6
+mkfs.ext4 /dev/sda5 # /boot
+mkfs.ext4 /dev/sda6 # /
 mount /dev/sda6 /mnt
-mkdir /mnt/boot && mount /dev/sda5 /mnt/boot
+mkdir /mnt/boot
+mount /dev/sda5 /mnt/boot
 ```
 
 
