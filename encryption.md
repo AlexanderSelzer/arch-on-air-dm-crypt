@@ -38,6 +38,7 @@ These can vary, so be careful and double-check everything involving the partitio
 ## 4. Format and mount partition
 ### Encryption setup
 See [the wiki page](https://wiki.archlinux.org/index.php/Dm-crypt/Encrypting_an_entire_system#Simple_partition_layout_with_LUKS) for more information.
+
 #### Optional: Wipe data on disk (don't choose the wrong one!)
 ##### Some arguments for it can be found [here](https://wiki.archlinux.org/index.php/Disk_encryption#Preparing_the_disk).
 See [this wiki page](https://wiki.archlinux.org/index.php/Dm-crypt/Drive_preparation#Secure_erasure_of_the_hard_disk_drive).
@@ -45,23 +46,33 @@ See [this wiki page](https://wiki.archlinux.org/index.php/Dm-crypt/Drive_prepara
 ## Create a new encrypted container
 cryptsetup open --type plain /dev/sda5 container
 ## Type in any password
+
 ## check that it exists
 lsblk
 ls /dev/mapper # (should have one "container")
+
 ## write zeroes over it. These zeroes will get encrypted and will not be
 ## distuinguishable from random data (/dev/random).
 dd if=/dev/zero of=/dev/mapper/container
+
+cryptsetup luksClose container
 ```
 
+#### Create the encrypted partition
+see [this wiki page](https://wiki.archlinux.org/index.php/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode).
 ```
-cryptsetup /dev/sda6 
+## -s = keysize, -y = verify passphrase, -v = verbose
+cryptsetup -y -v -s 512 luksFormat /dev/sda6 
+cryptsetup open /dev/sda6 root ## This should ask for the passphrase
 ```
+The root parition is now mounted in /dev/mapper/root
 
-
+#### Create filesystems
 ```
 mkfs.ext4 /dev/sda5 # /boot
-mkfs.ext4 /dev/sda6 # /
-mount /dev/sda6 /mnt
+mkfs.ext4 /dev/mapper/root # / (this is /dev/sda6)
+
+mount /dev/mapper/root /mnt
 mkdir /mnt/boot
 mount /dev/sda5 /mnt/boot
 ```
@@ -69,11 +80,11 @@ mount /dev/sda5 /mnt/boot
 
 ## 5. Installation
 This requires an internet connection. Options:
-- Tethered phone via USB (easiest IMO)
-- Wired (with some Apple proprietary ethernet thing ($$$?))
-- Wireless (requires b43 wireless firmware ([[https://aur.archlinux.org/packages/b43-firmware/][AUR]]))
+- Tethered phone via USB (but how?)
+- Wired ([30$](http://store.apple.com/us/product/MD463ZM/A/thunderbolt-to-gigabit-ethernet-adapter?fnode=51))
+- Wireless (requires b43 wireless firmware ([[https://aur.archlinux.org/packages/b43-firmware/][AUR]])), or some supported USB device (like ath9k).
+- Download the files get pacman to use them offline, somehow.
 ```
-begin_src sh
 pacstrap /mnt base base-devel
 genfstab -U -p /mnt >> /mnt/etc/fstab
 ```
