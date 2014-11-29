@@ -1,4 +1,4 @@
-Arch on Air
+Arch on Air (please don't follow yet, this is incomplete right now)
 ---------
 
 Instructions for installing Arch Linux side-by-side with OS X on a Macbook Air 2013/2014.
