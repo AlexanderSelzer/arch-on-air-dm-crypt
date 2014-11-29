@@ -22,20 +22,42 @@ You might want a swap partition, but in my opinion it is not needed if you have 
 cgdisk /dev/sda
 ```
 
-**** Partitions:
-***** [128MB] Apple HFS+ "Boot Loader" (will get formatted to HFS+ later)
-***** [256MB] Linux filesystem "boot"
-***** [Rest of space] Linux filesystem "root"
-That's three partitions. Don't forget /boot (it would work without it, but not with disk encryption)
+Partitions:
+* [128MB] Apple HFS+ "Boot Loader" (will get formatted to HFS+ later)
+* [256MB] Linux filesystem "boot"
+* [Rest of space] Linux filesystem "root"
+That's exactly three new partitions. Don't forget /boot. It would work without it, but not with disk encryption (happened to me)
 
 ### Very important: device names
 
-These can vary, so be careful and double-check everything involving the partitions.
-* /dev/sda4 is assumed to be the apple bootloader
-* /dev/sda5 is assumed to be the /boot partition of the linux system
-* /dev/sda6 is assumed to be the root file system.
+These can vary, so be careful and double-check everything involving the partitions (`lsblk` is nice).
+* `/dev/sda4` is assumed to be the apple bootloader
+* `/dev/sda5` is assumed to be the /boot partition of the linux system
+* `/dev/sda6` is assumed to be the root file system.
 
 ## 4. Format and mount partition
+### Encryption setup
+See [the wiki page](https://wiki.archlinux.org/index.php/Dm-crypt/Encrypting_an_entire_system#Simple_partition_layout_with_LUKS) for more information.
+#### Optional: Wipe data on disk (don't choose the wrong one!)
+##### Some arguments for it can be found [here](https://wiki.archlinux.org/index.php/Disk_encryption#Preparing_the_disk).
+See [this wiki page](https://wiki.archlinux.org/index.php/Dm-crypt/Drive_preparation#Secure_erasure_of_the_hard_disk_drive).
+```sh
+## Create a new encrypted container
+cryptsetup open --type plain /dev/sda5 container
+## Type in any password
+## check that it exists
+lsblk
+ls /dev/mapper # (should have one "container")
+## write zeroes over it. These zeroes will get encrypted and will not be
+## distuinguishable from random data (/dev/random).
+dd if=/dev/zero of=/dev/mapper/container
+```
+
+```
+cryptsetup /dev/sda6 
+```
+
+
 ```
 mkfs.ext4 /dev/sda5 # /boot
 mkfs.ext4 /dev/sda6 # /
