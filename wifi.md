@@ -1,0 +1,1 @@
+## WiFi setup mini guide
