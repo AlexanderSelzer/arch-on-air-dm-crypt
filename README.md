@@ -260,13 +260,13 @@ select which operating system to boot.
 
 ## 16. Get wireless working in Arch
 ### Get broadcom drivers
-###  Download and install [[https://aur.archlinux.org/packages/broadcom-wl/][broadcom wl from AUR]]
+###  Download and install [broadcom wl from AUR](https://aur.archlinux.org/packages/broadcom-wl/)
 (Make sure that b43 and ssb modules are not present in the output
 from `lsmod`)
 ```sh
 modprobe wl
 ```
-### Alternatively, install [[https://aur.archlinux.org/packages/broadcom-wl-dkms/][broadcom-wl-dkms]] instead
+### Alternatively, install [broadcom-wl-dkms](https://aur.archlinux.org/packages/broadcom-wl-dkms/) instead
 ...so that kernel updates don't leave you without wifi. DKMS
 is a service that recompiles external modules after every kernel
 upgrade.
@@ -290,7 +290,7 @@ localectl set-keymap --no-convert keymap
 
 ### Fix tilde key (probably only for English keyboards)
 The tilde key does not work on the keyboard out of the box. There
-are several solutions listed [[https://wiki.archlinux.org/index.php/Apple_Keyboard][here]] but this one worked for me:
+are several solutions listed [here](https://wiki.archlinux.org/index.php/Apple_Keyboard) but this one worked for me:
 ```sh
 sudo nano /etc/modprobe.d/hid_apple.conf
 ```
