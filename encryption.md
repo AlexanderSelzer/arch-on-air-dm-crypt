@@ -60,7 +60,7 @@ cryptsetup luksClose container
 
 #### Create the encrypted partition
 see [this wiki page](https://wiki.archlinux.org/index.php/Dm-crypt/Device_encryption#Encryption_options_for_LUKS_mode).
-```
+```sh
 ## -s = keysize, -y = verify passphrase, -v = verbose
 cryptsetup -y -v -s 512 luksFormat /dev/sda6 
 cryptsetup open /dev/sda6 root ## This should ask for the passphrase
@@ -68,7 +68,7 @@ cryptsetup open /dev/sda6 root ## This should ask for the passphrase
 The root parition is now mounted in /dev/mapper/root
 
 #### Create filesystems
-```
+```sh
 mkfs.ext4 /dev/sda5 # /boot
 mkfs.ext4 /dev/mapper/root # / (this is /dev/sda6)
 
@@ -82,24 +82,26 @@ mount /dev/sda5 /mnt/boot
 This requires an internet connection. Options:
 - Tethered phone via USB (but how?)
 - Wired ([30$](http://store.apple.com/us/product/MD463ZM/A/thunderbolt-to-gigabit-ethernet-adapter?fnode=51))
-- Wireless (requires b43 wireless firmware ((AUR)[https://aur.archlinux.org/packages/b43-firmware/]), or some USB device with drivers already available (like ath9k). See (mini guide)[].
+- Wireless (requires b43 wireless firmware ((AUR)[https://aur.archlinux.org/packages/b43-firmware/]), or some USB device with drivers already available (like ath9k). See (mini guide)[https://github.com/AlexanderSelzer/archlinux-mb-air/blob/master/wifi.md].
 - Download the files get pacman to use them offline, somehow.
-```
+```sh
 pacstrap /mnt base base-devel
 genfstab -U -p /mnt >> /mnt/etc/fstab
 ```
 
 
 ## 6. Optimize fstab for SSD
-```
+```sh
 nano /mnt/etc/fstab
 ```
+
+Don't copy this fstab (will probably break stuff)!
+Add `discard` to the options on the root partition line.
 ```
 /dev/sda6 /     ext4 defaults,noatime,discard,data=writeback 0 1
 /dev/sda5 /boot ext4 defaults,relatime,stripe=4              0 2
 ```
 https://wiki.archlinux.org/index.php/Solid_State_Drives
-It's about 'discard'. TODO more info
 
 
 ## 7. Configure system
