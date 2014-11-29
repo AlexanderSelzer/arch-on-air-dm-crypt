@@ -82,7 +82,7 @@ mount /dev/sda5 /mnt/boot
 This requires an internet connection. Options:
 - Tethered phone via USB (but how?)
 - Wired ([30$](http://store.apple.com/us/product/MD463ZM/A/thunderbolt-to-gigabit-ethernet-adapter?fnode=51))
-- Wireless (requires b43 wireless firmware ([[https://aur.archlinux.org/packages/b43-firmware/][AUR]])), or some supported USB device (like ath9k).
+- Wireless (requires b43 wireless firmware ((AUR)[https://aur.archlinux.org/packages/b43-firmware/]), or some USB device with drivers already available (like ath9k). See (mini guide)[].
 - Download the files get pacman to use them offline, somehow.
 ```
 pacstrap /mnt base base-devel
