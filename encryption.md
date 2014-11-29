@@ -98,9 +98,10 @@ nano /mnt/etc/fstab
 Don't copy this fstab (will probably break stuff)!
 Add `discard` to the options on the root partition line.
 ```
-/dev/sda6 /     ext4 defaults,noatime,discard,data=writeback 0 1
+/dev/sda6 /     ext4 defaults,noatime,discard                0 1
 /dev/sda5 /boot ext4 defaults,relatime,stripe=4              0 2
 ```
+`noatime` might increase performance as well.
 https://wiki.archlinux.org/index.php/Solid_State_Drives
 
 
@@ -111,12 +112,10 @@ passwd
 echo myhostname > /etc/hostname
 ## https://wiki.archlinux.org/index.php/beginners%27_guide#Time_zone
 ls /usr/share/zoneinfo # find your region
-ln -s /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
-# ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 hwclock --systohc --utc
 useradd -m -g users -G wheel -s /bin/bash myusername
 passwd myusername
-pacman -S sudo
 ```
 
 
@@ -138,11 +137,16 @@ export LANG=en_US.UTF-8
 
 
 ## 10. Set up mkinitcpio hooks and run
-Insert "keyboard" after "autodetect" if it's not already there.
+Add `keymap` and `encrypt` (in this order) to `HOOKS` before `filesystems`.
 ```
 nano /etc/mkinitcpio.conf
 ```
-Then run it:
+The line will now look similar to this:
+```
+HOOKS="base udev autodetect modconf block keymap encrypt filesystems keyboard fsck"
+```
+
+Then run this:
 ```
 mkinitcpio -p linux
 ```
@@ -160,18 +164,21 @@ nano /etc/default/grub
 ```
 Aside from setting the quiet and rootflags kernel parameters,
 a special parameter must be set to avoid system (CPU/IO)
-hangs related to ATA, as per [[https://bbs.archlinux.org/viewtopic.php?pid%3D1295212#p1295212][this thread]]:
+hangs related to ATA, as per [this thread](https://bbs.archlinux.org/viewtopic.php?pid%3D1295212#p1295212):
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet rootflags=data=writeback libata.force=1:noncq"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet libata.force=1:noncq cryptdevice=UUID=[uuid]:root:allow-discards"
 ```
+[uuid] = the UUID of /dev/sda6
+*careful:* It's not the one in fstab (which is `/dev/mapper/root`), it's the one of `/dev/sda6` from the output of `blkid` and `lsblk -f`
+
 Additionally, the grub template is broken and requires this adjustment:
 ```
 # fix broken grub.cfg gen
 GRUB_DISABLE_SUBMENU=y
 ```
 ```sh
-grub-mkconfig -o boot/grub/grub.cfg
-grub-mkstandalone -o boot.efi -d usr/lib/grub/x86_64-efi -O x86_64-efi --compress=xz boot/grub/grub.cfg
+grub-mkconfig -o /boot/grub/grub.cfg
+grub-mkstandalone -o boot.efi -d usr/lib/grub/x86_64-efi -O x86_64-efi --compress=xz /boot/grub/grub.cfg
 ## might be useful (if you already have one USB stick and one with WiFi):
 nc -l 8181 > boot.efi
 
@@ -189,6 +196,8 @@ exit # exit chroot
 reboot
 ```
 
+## 12.5 Get stuff (recommended)
+You might really want to get `wpa_supplicant` and `wifi-menu` installed on the system. They're not included by default.
 
 ## 13. Launch Disk Utility in OS X
 Format ("Erase") /dev/sda4 using Mac journaled filesystem.
@@ -272,7 +281,14 @@ sudo wifi-menu -o
 ```
 
 
-## 17. Tilde key
+## 17. Keyboard
+### Set up the keymap
+```sh
+localectl list-keymaps
+localectl set-keymap --no-convert keymap
+```
+
+### Fix tilde key (probably only for English keyboards)
 The tilde key does not work on the keyboard out of the box. There
 are several solutions listed [[https://wiki.archlinux.org/index.php/Apple_Keyboard][here]] but this one worked for me:
 ```sh
