@@ -288,7 +288,37 @@ localectl list-keymaps
 localectl set-keymap --no-convert keymap
 ```
 
-### Fix tilde key (probably only for English keyboards)
+## 18. Fix Current Linux Problems (3.17)
+
+### CPU speed, Hyper Threading and overheating
+*Note:* Only apply this fix if you are affected.
+If `top` always shows a high CPU usage on one core, and Hyper Threading is on, even though it really shouldn't be,
+try this. 
+
+Create the file `/etc/systemd/system/mbafix.service
+```
+[Unit]
+Description=Macbook Air Fix
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "echo disable > /sys/firmware/acpi/interrupts/gpe66"
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```sh
+systemctl enable mbafix
+```
+
+### Screen brightness after suspend
+*Note:* Just see if the problem happens (either fully dark or bright after opening laptop).
+
+Install [mba6x_bl-dkms[(https://aur.archlinux.org/packages/mba6x_bl-dkms/).
+
+
+### Fix tilde key (only for English keyboards)
 The tilde key does not work on the keyboard out of the box. There
 are several solutions listed [here](https://wiki.archlinux.org/index.php/Apple_Keyboard) but this one worked for me:
 ```sh
@@ -297,10 +327,3 @@ sudo nano /etc/modprobe.d/hid_apple.conf
 ```sh
 options hid_apple iso_layout=0
 ```
-
-
-## 18. Insert and <F1..12> keys
-The <insert> key can be reproduced with fn+<Enter>. So to paste in an xterm
-window for instance, use S-fn-<Enter>.
-
-F1-F12 require fn+<F1>, etc.
