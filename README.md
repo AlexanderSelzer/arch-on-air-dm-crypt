@@ -248,14 +248,14 @@ The tree should look like this:
 ```
 
 
-## 15. Make Boot Loader partition bootable
+## 15. Make the Linux bootloader the default
 ```sh
 sudo bless --device /dev/disk0s4 --setBoot
 ```
 Voila, Arch Linux is installed.
 
 Reboot the computer and hold the alt/option key to
-select which operating system to boot.
+select which operating system to boot, or just let Arch start.
 
 
 ## 16. Get wireless working in Arch
