@@ -290,6 +290,14 @@ localectl set-keymap --no-convert keymap
 
 ## 18. Fix Current Linux Problems (3.17)
 
+### WiFi connection problems
+
+When it looks like the password was rejected, but it is correct, do this:
+```
+modprobe -r wl
+morprobe wl
+```
+
 ### CPU speed, Hyper Threading and overheating
 *Note:* Only apply this fix if you are affected.
 If `top` always shows a high CPU usage on one core, and Hyper Threading is on, even though it really shouldn't be,
